@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>예쁜 투두리스트</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&family=Noto+Sans+KR:wght@400;500&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS (디자인) */
+        :root {
+            --primary-color: #7f56d9; /* 보라색 */
+            --light-primary: #f4f3ff; /* 연한 보라색 (배경) */
+            --text-color: #344054; /* 진한 텍스트 */
+            --light-text: #667085; /* 연한 텍스트 */
+            --border-color: #eaecf0;
+            --background: #fcfcfd;
+            --card-background: #ffffff;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        body {
+            /* Noto Sans KR: 한글, Poppins: 영어/숫자 */
+            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: var(--background);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px; /* 모바일 여백 */
+            box-sizing: border-box; /* 패딩 포함 크기 계산 */
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px; /* 최대 너비 고정 */
+            background-color: var(--card-background);
+            padding: 32px;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+        }
+
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-top: 0;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        /* 할 일 입력 폼 */
+        .todo-form {
+            display: flex;
+            gap: 10px; /* 입력창과 버튼 사이 간격 */
+            margin-bottom: 24px;
+        }
+
+        #todo-input {
+            flex-grow: 1; /* 남은 공간을 모두 차지 */
+            font-family: 'Poppins', 'Noto Sans KR', sans-serif;
+            font-size: 1rem;
+            padding: 12px 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        #todo-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(127, 86, 217, 0.1);
+        }
+
+        #add-btn {
+            font-family: 'Poppins', sans-serif;
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #add-btn:hover {
+            background-color: #6941c6; /* 살짝 더 진한 보라 */
+        }
+
+        /* 할 일 목록 */
+        #todo-list {
+            list-style: none; /* 기본 점 제거 */
+            padding: 0;
+            margin: 0;
+            max-height: 400px; /* 목록이 길어지면 스크롤 */
+            overflow-y: auto; /* Y축 스크롤 자동 */
+        }
+
+        /* 할 일 아이템 (li) */
+        .todo-item {
+            display: flex;
+            align-items: center;
+            padding: 14px 10px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color 0.2s;
+        }
+
+        .todo-item:last-child {
+            border-bottom: none; /* 마지막 아이템은 밑줄 제거 */
+        }
+        
+        .todo-item:hover {
+            background-color: #fafafa; /* 마우스 올리면 살짝 배경색 */
+        }
+
+        /* 체크박스 */
+        .todo-item input[type="checkbox"] {
+            /* 커스텀 체크박스 모양 */
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 14px;
+            position: relative; /* 체크 표시를 위한 기준점 */
+            flex-shrink: 0; /* 텍스트가 길어져도 찌그러지지 않음 */
+        }
+
+        /* 체크박스 '체크 시' */
+        .todo-item input[type="checkbox"]:checked {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        /* 체크박스 '체크 표시' (가상 요소 사용) */
+        .todo-item input[type="checkbox"]:checked::after {
+            content: '✔';
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 할 일 텍스트 */
+        .todo-item .task-text {
+            flex-grow: 1; /* 텍스트가 남은 공간 차지 */
+            font-size: 1rem;
+            color: var(--text-color);
+            transition: color 0.3s, text-decoration 0.3s;
+        }
+        
+        /* 삭제 버튼 */
+        .todo-item .delete-btn {
+            background: none;
+            border: none;
+            color: var(--light-text);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 6px;
+            margin-left: 10px;
+            flex-shrink: 0;
+            transition: background-color 0.2s, color 0.2s;
+        }
+        
+        .todo-item .delete-btn:hover {
+            color: #d92d20; /* 삭제 빨간색 */
+            background-color: #fef3f2;
+        }
+
+        /* ★ 완료 상태 (JS가 .completed 클래스를 li에 추가/제거) */
+        .todo-item.completed .task-text {
+            text-decoration: line-through; /* 취소선 */
+            color: var(--light-text); /* 연한 회색 */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>My To-Do List 📝</h1>
+        
+        <form class="todo-form" id="todo-form">
+            <input type="text" id="todo-input" placeholder="새로운 할 일을 입력하세요..." autocomplete="off">
+            <button type="submit" id="add-btn">추가</button>
+        </form>
+        
+        <ul id="todo-list">
+            </ul>
+    </div>
+
+    <script>
+        // 1. 필요한 HTML 요소들 가져오기
+        const todoForm = document.getElementById('todo-form');
+        const todoInput = document.getElementById('todo-input');
+        const todoList = document.getElementById('todo-list');
+
+        /**
+         * 2. (핵심) 새로운 할 일을 생성하고 DOM에 추가하는 함수
+         */
+        function addTask(taskText) {
+            // (1) li (할 일 아이템) 생성
+            const todoItem = document.createElement('li');
+            todoItem.className = 'todo-item'; // CSS 클래스 적용
+
+            // (2) 체크박스 생성
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            
+            // (3) 할 일 텍스트(span) 생성
+            const textSpan = document.createElement('span');
+            textSpan.className = 'task-text';
+            textSpan.textContent = taskText; // 입력받은 텍스트 넣기
+
+            // (4) 삭제 버튼 생성
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.textContent = '🗑️'; // 삭제 아이콘 (이모지)
+
+            // (5) li에 자식 요소들(체크박스, 텍스트, 삭제버튼)을 조립
+            todoItem.appendChild(checkbox);
+            todoItem.appendChild(textSpan);
+            todoItem.appendChild(deleteBtn);
+
+            // (6) ul(목록)에 li(아이템)을 추가
+            todoList.appendChild(todoItem);
+        }
+
+        /**
+         * 3. '추가' 버튼 클릭 또는 'Enter' 키 입력 시 실행될 이벤트 리스너
+         */
+        todoForm.addEventListener('submit', (event) => {
+            // form의 기본 동작(새로고침)을 막음
+            event.preventDefault(); 
+
+            // 입력창에서 공백(띄어쓰기)을 제거한 텍스트
+            const taskText = todoInput.value.trim();
+
+            if (taskText !== "") { // 입력값이 비어있지 않다면
+                addTask(taskText);  // 할 일 추가 함수 실행
+                todoInput.value = ""; // 입력창 비우기
+            }
+            
+            todoInput.focus(); // 입력창에 다시 포커스
+        });
+
+        /**
+         * 4. (중요!) 목록(ul)에서 발생하는 클릭 이벤트를 처리 (이벤트 위임)
+         * (각각의 체크박스와 삭제 버튼에 이벤트를 다는 대신, 부모인 ul에 한 번만 달아서 관리)
+         */
+        todoList.addEventListener('click', (event) => {
+            const clickedElement = event.target; // 사용자가 실제로 클릭한 요소
+            
+            // (A) 클릭한 게 '체크박스'일 때
+            if (clickedElement.type === 'checkbox') {
+                const todoItem = clickedElement.parentElement; // 부모 li
+                // 'completed' 클래스를 li에 토글(추가/제거)
+                todoItem.classList.toggle('completed');
+            }
+            
+            // (B) 클릭한 게 '삭제 버튼'일 때
+            if (clickedElement.classList.contains('delete-btn')) {
+                const todoItem = clickedElement.parentElement; // 부모 li
+                // 부드럽게 사라지는 효과 (선택 사항)
+                todoItem.style.opacity = '0';
+                todoItem.style.transform = 'translateX(20px)';
+                todoItem.style.transition = 'opacity 0.3s, transform 0.3s';
+                
+                // 0.3초 뒤에 DOM에서 실제로 제거
+                setTimeout(() => {
+                    todoItem.remove(); 
+                }, 300);
+            }
+        });
+
+    </script>
+</body>
+</html>
