@@ -10,7 +10,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* CSS (디자인) - 변경 없음 */
+        /* CSS는 변경 사항 없습니다 (생략) */
         :root {
             --primary-color: #7f56d9;
             --light-primary: #f4f3ff;
@@ -199,12 +199,10 @@
 
         // 2. Supabase 클라이언트 설정
         // ★★★★★ 본인의 URL과 Key로 변경하세요 ★★★★★
-        // (보안을 위해 노출되었던 키는 폐기하고 새로 발급받으세요)
         const SUPABASE_URL = 'YOUR_NEW_SUPABASE_URL'; // 👈 여기
         const SUPABASE_ANON_KEY = 'YOUR_NEW_SUPABASE_ANON_KEY'; // 👈 여기
 
-        // 🚨 (수정 1/5)
-        // Supabase 클라이언트 초기화 (변수명 'supabase' -> 'sb'로 변경)
+        // (수정 1/5)
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         /**
@@ -235,18 +233,22 @@
                 todoItem.classList.add('completed');
             }
 
-            todoList.appendChild(todoItem);
+            // 🚨 ★★★★★ 여기를 수정했습니다 ★★★★★ 🚨
+            // (7) ul(목록)에 li(아이템)을 '맨 앞에' 추가
+            todoList.prepend(todoItem); 
         }
 
         /**
          * 4. 페이지 로드 시 DB에서 모든 할 일을 가져오는 함수
          */
         async function loadTasks() {
-            // 🚨 (수정 2/5) 'supabase' -> 'sb'
+            // (수정 2/5) 'supabase' -> 'sb'
+            // 'ascending: true' (오래된 순)로 설정해야
+            // 'prepend'와 조합되어 최신 항목이 맨 위로 갑니다.
             const { data, error } = await sb
                 .from('todos')
                 .select('*')
-                .order('created_at', { ascending: true });
+                .order('created_at', { ascending: true }); // 👈 이 부분 중요
 
             if (error) {
                 console.error('Error loading tasks:', error);
@@ -268,7 +270,7 @@
             const taskText = todoInput.value.trim();
 
             if (taskText !== "") {
-                // 🚨 (수정 3/5) 'supabase' -> 'sb'
+                // (수정 3/5) 'supabase' -> 'sb'
                 const { data, error } = await sb
                     .from('todos')
                     .insert([
@@ -279,7 +281,9 @@
                 if (error) {
                     console.error('Error adding task:', error);
                 } else {
-                    createTodoElement(data[0]);
+                    // createTodoElement가 이제 prepend로 작동하므로
+                    // 새 항목이 맨 위에 추가됩니다.
+                    createTodoElement(data[0]); 
                     todoInput.value = "";
                 }
             }
@@ -298,7 +302,7 @@
                 const id = todoItem.dataset.id;
                 const isCompleted = clickedElement.checked;
 
-                // 🚨 (수정 4/5) 'supabase' -> 'sb'
+                // (수정 4/5) 'supabase' -> 'sb'
                 const { error } = await sb
                     .from('todos')
                     .update({ is_completed: isCompleted })
@@ -316,7 +320,7 @@
                 const todoItem = clickedElement.parentElement;
                 const id = todoItem.dataset.id;
 
-                // 🚨 (수정 5/5) 'supabase' -> 'sb'
+                // (수정 5/5) 'supabase' -> 'sb'
                 const { error } = await sb
                     .from('todos')
                     .delete()
